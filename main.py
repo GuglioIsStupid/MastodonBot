@@ -1,5 +1,5 @@
 from mastodon import Mastodon, StreamListener
-import os, json, requests
+import os, json, requests, time
 import asyncio
 import backend.profile as profile
 import backend.commands as commands
