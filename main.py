@@ -41,7 +41,6 @@ listener = StreamListener()
 async def checkMentions():
     for notif in bot.notifications():
         if notif["type"] == "mention":
-            print(notif.status["content"])
             if "@<span>GuglioBotTest</span>" in notif.status.content:
                 # from the content
                 content = notif.status["content"]
@@ -49,9 +48,9 @@ async def checkMentions():
                 if content.startswith("<span class=\"h-card\">"):
                     #remove everything up to the last > and strip the spaces from start and end
                     content = content[content.rfind(">") + 1:].strip()
-                    
+                content = content.strip()
                 # if content starts with profile
-                if content.startswith(" profile"):
+                if content.startswith("profile"):
                     userID = notif.status["account"]["id"]
                     profilePictureURL = notif.status["account"]["avatar"]
                     displayName = notif.status["account"]["display_name"]
@@ -74,7 +73,7 @@ async def checkMentions():
                         bot.status_post(testStr + "Command not found!", in_reply_to_id=notif.status["id"])
         
     bot.notifications_clear()
-            
+
 async def main():
     while True:
         #print("loop")

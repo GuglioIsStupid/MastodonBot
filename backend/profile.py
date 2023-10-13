@@ -33,12 +33,14 @@ defaultProfileValues = {
 
 def update_all_profiles():
     for file in os.listdir(profilePath):
-        with open(profilePath + file, "r") as f:
-            profile = json.load(f)
-            for key in defaultProfileValues:
-                if key not in profile:
-                    profile[key] = defaultProfileValues[key]
-            save_profile(profile)
+        # does the file end with .json?
+        if file.endswith(".json"):
+            with open(profilePath + file, "r") as f:
+                profile = json.load(f)
+                for key in defaultProfileValues:
+                    if key not in profile:
+                        profile[key] = defaultProfileValues[key]
+                save_profile(profile)
 
 def create_profile(userId):
     profile = {

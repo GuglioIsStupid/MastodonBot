@@ -4,14 +4,6 @@ import os, time
 import backend.profile as profile
 import random
 # set seed to current time
-def command(name, description):
-    # Decorator for commands
-
-    def decorator(func):
-        commands[name] = [func, description]
-        return func
-
-    return decorator
 
 def daily(userID):
     cur_profile = profile.get_profile(userID)
@@ -60,6 +52,25 @@ def very_rare_chance_to_get_100000_coins(userID):
     else:
         return "You didn't get 100000 coins from a very rare chance LOL"
 
+def recommend(userID, *thing):
+    thing = " ".join(thing)
+    cur_profile = profile.get_profile(userID)
+    if len(thing) == 0:
+        return "You must provide a thing to recommend me!"
+    else:
+        try:
+            with open("data/recommendations/" + userID + ".json", "r") as f:
+                recommendations = json.load(f)
+                recommendations.append(thing)
+                with open("data/recommendations/" + userID + ".json", "w") as f:
+                    json.dump(recommendations, f)
+        except:
+            with open("data/recommendations/" + userID + ".json", "w") as f:
+                json.dump([thing], f)
+        return "Your recommendation has been added! @_, please review it!"
+
+    return "You must provide a reason!"
+
 def help_(userID):
     # Returns a string of all commands and their descriptions
     helpStr = "Commands:\n"
@@ -75,5 +86,6 @@ commands = {
     "daily": [daily, "Claim your daily reward\n- Usage: daily"],
     "gamble": [gamble, "Gamble your money away\n- Usage: gamble <amount> <choice>"],
     "very_rare_chance_to_get_100000_coins": [very_rare_chance_to_get_100000_coins, "Very rare chance to get 100000 coins\n- Usage: very_rare_chance_to_get_100000_coins"],
+    "recommend": [recommend, "Recommend something to me\n- Usage: recommend <thing>"],
     "help": [help_, "Get a list of all commands\n- Usage: help"],
 }
