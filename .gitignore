@@ -1,6 +1,8 @@
 backend/__pycache__/*
 data/profiles/*
+data/spinners/*
 !data/profiles/.gitkeep
+!data/spinners/.gitkeep
 secret/*
 !secret/.gitkeep
 

@@ -2,7 +2,9 @@ import asyncio
 import json
 import os, time
 import backend.profile as profile
-import random
+import random, math
+
+from PIL import Image, ImageDraw, ImageFont
 # set seed to current time
 
 def daily(userID):
@@ -21,7 +23,11 @@ def daily(userID):
     else:
         return "You have already claimed your daily reward today!"
 
+
+#### Start of gambling commands ####
 def gamble(userID, amount, choice):
+    if type(amount) == str and amount == "all":
+        amount = profile.get_profile(userID)["money"]
     amount = int(amount)
     choice = int(choice)
     cur_profile = profile.get_profile(userID)
@@ -41,6 +47,215 @@ def gamble(userID, amount, choice):
             return "You lost " + str(amount) + " coins :("
     else:
         return "You don't have enough money!"
+
+def gamble_all(userID, choice):
+    return gamble(userID, "all", choice)
+
+def spin(userID, notif):
+    print("spin")
+    # is coins >= 1000?
+    cur_profile = profile.get_profile(userID)
+
+    if cur_profile["money"] >= 1000:
+        # create a gif of a spinning wheel
+        _spinnerSegments = [
+            500,
+            500,
+            1000,
+            1000,
+            1000,
+            2000,
+            250,
+            1,
+            100,
+        ]
+
+        images = []
+        _imgWidth = 500
+        _imgHeight = 500
+
+        _center = (_imgWidth // 2, _imgHeight // 2)
+
+        _spinnerSegmentColours = [
+            (255, 0, 0),
+            (255, 255, 0),
+            (0, 255, 0),
+            (0, 255, 255),
+            (0, 0, 255),
+            (255, 0, 255),
+            (255, 255, 255),
+            (100, 100, 100),
+            (255, 255, 255),
+        ]
+
+        _step = len(_spinnerSegments)
+
+        # create original image
+        image = Image.new("RGB", (_imgWidth, _imgHeight), (255, 255, 255))
+        draw = ImageDraw.Draw(image)
+        # draw the segments
+        for i in range(_step):
+            draw.pieslice(
+                [
+                    (_center[0] - _imgWidth // 2, _center[1] - _imgHeight // 2),
+                    (_center[0] + _imgWidth // 2, _center[1] + _imgHeight // 2),
+                ],
+                360 // _step * i,
+                360 // _step * (i + 1),
+                fill=_spinnerSegmentColours[i],
+            )
+
+        # save the original image
+        images.append(image)
+
+        # create the other images
+
+        # choose our random segment
+        random.seed(time.time())
+        _randomSegment = random.randint(0, _step - 1)
+
+        # set angle to segment position
+        _angle = 360 // _step * _randomSegment
+
+        # make a gif of the wheel spinning to the random segment (3 turns)
+        for i in range(3 * _step):
+            # create new image
+            image = Image.new("RGB", (_imgWidth, _imgHeight), (255, 255, 255))
+            draw = ImageDraw.Draw(image)            # draw the segments
+            for j in range(_step):
+                draw.pieslice(
+                    [
+                        (_center[0] - _imgWidth // 2, _center[1] - _imgHeight // 2),
+                        (_center[0] + _imgWidth // 2, _center[1] + _imgHeight // 2),
+                    ],
+                    360 // _step * j + _angle + 180,
+                    360 // _step * (j + 1) + _angle + 180,
+                    fill=_spinnerSegmentColours[j],
+                )
+
+            # draw numbers and pointer on the right
+            draw.polygon(
+                [
+                    (_center[0] + _imgWidth // 2 - 20, _center[1]),
+                    (_center[0] + _imgWidth // 2, _center[1] - 10),
+                    (_center[0] + _imgWidth // 2, _center[1] + 10),
+                ],
+                fill=(0, 0, 0),
+            )
+
+            for j in range(_step):
+                # draw the text
+                font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", 40)
+                text = str(_spinnerSegments[j])
+                textWidth, textHeight = font.getsize(text)
+                draw.text( 
+                    (
+                        # from the center, offsetted by 50px
+                        _center[0] * math.cos(math.radians(360 // _step * j + _angle + 180)) + _center[0] - textWidth // 2 - 50,
+                        _center[1] * math.sin(math.radians(360 // _step * j + _angle + 180)) + _center[1] - textHeight // 2 - 50
+                    ),
+                    text,
+                    (0, 0, 0),
+                    font=font,
+                )
+
+            # set its last frame to the original image
+
+            # save the image
+            images.append(image)
+
+            # increment the angle
+            _angle += 360 // _step
+
+        # set the last 15 frames to the random segment
+        for i in range(15):
+            # create new image
+            image = Image.new("RGB", (_imgWidth, _imgHeight), (255, 255, 255))
+            draw = ImageDraw.Draw(image)            # draw the segments
+            for j in range(_step):
+                draw.pieslice(
+                    [
+                        (_center[0] - _imgWidth // 2, _center[1] - _imgHeight // 2),
+                        (_center[0] + _imgWidth // 2, _center[1] + _imgHeight // 2),
+                    ],
+                    360 // _step * j + _angle + 180,
+                    360 // _step * (j + 1) + _angle + 180,
+                    fill=_spinnerSegmentColours[j],
+                )
+            
+            # draw numbers and pointer on the right
+            draw.polygon(
+                [
+                    (_center[0] + _imgWidth // 2 - 20, _center[1]),
+                    (_center[0] + _imgWidth // 2, _center[1] - 10),
+                    (_center[0] + _imgWidth // 2, _center[1] + 10),
+                ],
+                fill=(0, 0, 0),
+            )
+
+            for j in range(_step):
+                # draw the text
+                font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", 40)
+                text = str(_spinnerSegments[j])
+                textWidth, textHeight = font.getsize(text)
+                draw.text( 
+                    (
+                        _center[0] * math.cos(math.radians(360 // _step * j + _angle + 180)) + _center[0] - textWidth // 2 - 50,
+                        _center[1] * math.sin(math.radians(360 // _step * j + _angle + 180)) + _center[1] - textHeight // 2 - 50
+                    ),
+                    text,
+                    (0, 0, 0),
+                    font=font,
+                )
+
+            # set its last frame to the original image
+
+            # save the image
+            images.append(image)
+
+        # on all images, set a black pointer on the right side of the image
+        # (and print the text onto the correct segment)
+        for i in range(len(images)):
+            image = images[i]
+            draw = ImageDraw.Draw(image)
+
+            # draw the pointer
+            draw.polygon(
+                [
+                    (_center[0] + _imgWidth // 2 - 20, _center[1]),
+                    (_center[0] + _imgWidth // 2, _center[1] - 10),
+                    (_center[0] + _imgWidth // 2, _center[1] + 10),
+                ],
+                fill=(0, 0, 0),
+            )
+
+            # save the image
+            images[i] = image
+
+
+        # create the gif
+        images[0].save(
+            "data/spinners/" + userID + ".gif",
+            save_all=True,
+            append_images=images[1:],
+            duration=100,
+            loop=0,
+        )
+
+        # upload the gif
+        #media = bot.media_post("data/spinners/" + userID + ".gif", "image/gif")
+
+        # post the gif
+        #bot.status_post(
+        #    "Here is your spinner!",
+        #    in_reply_to_id=notif.status["id"],
+        #    media_ids=[media],
+        #)
+        return "data/spinners/" + userID + ".gif"
+
+def money(userID):
+    cur_profile = profile.get_profile(userID)
+    return "You have " + str(cur_profile["money"]) + " coins!"
 
 def very_rare_chance_to_get_100000_coins(userID):
     random.seed(time.time())
@@ -85,6 +300,8 @@ commands = {
     # Command: [function, description]
     "daily": [daily, "Claim your daily reward\n- Usage: daily"],
     "gamble": [gamble, "Gamble your money away\n- Usage: gamble <amount> <choice>"],
+    "gamble_all": [gamble_all, "Gamble all your money away\n- Usage: gamble_all <choice>"],
+    "spin": [spin, "Spin the wheel of fortune\n- Usage: spin"],
     "very_rare_chance_to_get_100000_coins": [very_rare_chance_to_get_100000_coins, "Very rare chance to get 100000 coins\n- Usage: very_rare_chance_to_get_100000_coins"],
     "recommend": [recommend, "Recommend something to me\n- Usage: recommend <thing>"],
     "help": [help_, "Get a list of all commands\n- Usage: help"],

@@ -1,0 +1,7 @@
+                    elif content.startswith("spin"):
+                        command = content.split(" ")[0].strip()
+                        uid = notif.status["account"]["id"]
+                        mediaPath = commands.commands[command][0](uid, *content.split(" ")[1:], notif)
+                        media = bot.media_post(mediaPath, "image/gif")
+
+                        #bot.status_post(testStr + "Lets see what you get!", in_reply_to_id=notif.status["id"], media_ids=[media])
