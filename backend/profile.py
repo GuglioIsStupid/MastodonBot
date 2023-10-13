@@ -28,7 +28,7 @@ profilePath = "data/profiles/"
 defaultProfileValues = {
     "money": 0,
     "inventory": [],
-    "dailyTimer": 0,
+    "usedDaily": False,
 }
 
 def update_all_profiles():
@@ -47,6 +47,7 @@ def create_profile(userId):
         "id": userId,
         "money": 0,
         "inventory": [],
+        "usedDaily": False,
     }
 
     with open(profilePath + userId + ".json", "w") as f:

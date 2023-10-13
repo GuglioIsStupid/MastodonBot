@@ -74,6 +74,30 @@ async def checkMentions():
         
     bot.notifications_clear()
 
+async def checkForDailyReset():
+    # 12am EST
+    curTime = time.time()
+
+    # get current hour
+    curHour = time.localtime(curTime).tm_hour
+    curMinute = time.localtime(curTime).tm_min
+    curSecond = time.localtime(curTime).tm_sec
+
+    # get seconds until 12am EST
+    secondsUntilReset = (24 - curHour) * 3600 - curMinute * 60 - curSecond
+
+    # wait until 12am EST
+    await asyncio.sleep(secondsUntilReset)
+
+    # reset daily timers
+    for file in os.listdir(profile.profilePath):
+        # does the file end with .json?
+        if file.endswith(".json"):
+            with open(profile.profilePath + file, "r") as f:
+                profile = json.load(f)
+                profile["dailyTimer"] = 0
+                profile.save_profile(profile)
+
 async def main():
     while True:
         #print("loop")
