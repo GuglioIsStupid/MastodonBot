@@ -64,7 +64,7 @@ async def checkMentions():
                     os.remove(image)
                 else:
                     try:
-                        command = content.split(" ")[0]
+                        command = content.split(" ")[0].strip()
                         uid = notif.status["account"]["id"]
                         response = commands.commands[command][0](uid, *content.split(" ")[1:])
 
