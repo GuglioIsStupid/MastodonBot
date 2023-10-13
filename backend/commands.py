@@ -7,13 +7,15 @@ import random
 
 def daily(userID):
     cur_profile = profile.get_profile(userID)
-    if not curProfile["usedDaily"]:
+    if (cur_profile["dailyTimer"] or 0) + 86400 <= time.time():
         random.seed(time.time())
         rand = random.randint(100, 175)
         cur_profile["money"] += rand
+        if not cur_profile["dailyTimer"]:
+            cur_profile["dailyTimer"] = time.time()
 
+        profile.update_profile(userID, "dailyTimer", cur_profile["dailyTimer"])
         profile.update_profile(userID, "money", cur_profile["money"])
-        profile.update_profile(userID, "usedDaily", True)
 
         return "You have claimed your daily reward of {} coins!".format(rand)
     else:
