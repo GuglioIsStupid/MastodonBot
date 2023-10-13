@@ -102,6 +102,7 @@ async def main():
     while True:
         #print("loop")
         await checkMentions()
+        await checkForDailyReset()
         # wait 1 second
         await asyncio.sleep(1)
 
